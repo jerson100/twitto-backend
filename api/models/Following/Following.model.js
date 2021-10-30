@@ -16,7 +16,6 @@ const FollowingSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
 const Following = mongoose.model("Following", FollowingSchema);
 
 module.exports = { Following };

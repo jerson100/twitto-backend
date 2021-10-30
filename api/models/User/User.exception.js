@@ -5,15 +5,36 @@ class NotFoundUserException extends Error {
     this.name = "NotFoundUserException";
   }
 }
-class RegisteredUserException extends Error {
+class UnauthorizedUserException extends Error {
+  constructor(msg = "El usuario no está autenticado", status = 401) {
+    super(msg);
+    this.status = status;
+    this.name = "UnauthorizedUserException";
+  }
+}
+
+class ForbiddenUserException extends Error {
   constructor(
-    msg = "El usuario con ese username ya se encuentra registrado en nuestro sistema",
-    status = 400
+    msg = "El usuario no puede ver, ni realizar nada con el recurso solicitado porque puede que no exista o simplemente no tenga acceso a dicho recurso",
+    status = 403
   ) {
+    super(msg);
+    this.status = status;
+    this.name = "ForbiddenUserException";
+  }
+}
+
+class RegisteredUserException extends Error {
+  constructor(msg = "No se pudo registrar el usuario", status = 400) {
     super(msg);
     this.status = status;
     this.name = "RegisteredUserException";
   }
 }
 
-module.exports = { NotFoundUserException, RegisteredUserException };
+module.exports = {
+  NotFoundUserException,
+  ForbiddenUserException,
+  UnauthorizedUserException,
+  RegisteredUserException,
+};

@@ -18,16 +18,18 @@ const updateOne = async (id, us) => {
 };
 
 const all = async () => {
-  return await User.find({}, { password: 0 });
+  return await User.find({}, { password: 0, __v: 0, updatedAt: 0 });
 };
 
 const getById = async (id) => {
-  return await User.findById(id, { password: 0 });
+  return await User.findById(id, { password: 0, __v: 0, updatedAt: 0 });
 };
 
 const getUserByUsername = async (username) => {
   return await User.findOne({ username: username });
 };
+
+// const findUserBy = async () => {};
 
 module.exports = {
   create,

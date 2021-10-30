@@ -3,6 +3,7 @@ const cors = require("cors");
 const UserRouter = require("./api/routers/User.router");
 const FollowingRouter = require("./api/routers/Following.router");
 const TweetRouter = require("./api/routers/Tweet.router");
+const AuthRouter = require("./api/routers/Auth.router");
 const mongoDB = require("./api/configs/mongoDb");
 require("dotenv").config();
 const app = express();
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use(`/api/${process.env.API_VERSION}/users`, UserRouter);
 app.use(`/api/${process.env.API_VERSION}/follows`, FollowingRouter);
 app.use(`/api/${process.env.API_VERSION}/tweets`, TweetRouter);
+app.use(`/api/${process.env.API_VERSION}/auth`, AuthRouter);
 
 app.listen(process.env.PORT, () => {
   console.log(`El servidor está escuchando en el puerto: ` + process.env.PORT);

@@ -7,29 +7,36 @@ const {
 const UserController = require("../controllers/User.controller");
 const { NotFoundUserException } = require("../models/User/User.exception");
 const { generatePassword } = require("../utils/validation/password");
-const { isRegisteredUser } = require("../middlewares/user");
+const { isRegisteredUser, verifyUsersType } = require("../middlewares/user");
 
 const FollowingController = require("../controllers/Following.controller");
+const { verifyUserAuthenticationToken } = require("../middlewares/token");
+const { USERS_TYPE } = require("../configs/constant");
 
 //sistema de middleware y direccionamiento completo
 const Router = RouterExpress();
 
 Router.route("/")
-  .get(async (req, res) => {
-    const users = await UserController.all();
-    return res.status(200).json({ data: users });
-  })
+  .get(
+    verifyUserAuthenticationToken,
+    verifyUsersType(USERS_TYPE.ADMINISTRATOR),
+    async (req, res) => {
+      const users = await UserController.all();
+      return res.status(200).json({ data: users });
+    }
+  )
   .post(
     isRegisteredUser(),
     validationSchema(UserCreateSchemaValidation),
     requestValidation(async (req, res) => {
-      req.body.password = await generatePassword(req.body.username);
+      req.body.password = await generatePassword(req.body.password);
       const newUser = await UserController.create(req.body);
       return res.status(201).json({ data: newUser });
     })
   );
 
 Router.route("/:id").get(
+  verifyUserAuthenticationToken,
   requestValidation(async (req, res) => {
     const user = await UserController.getById(req.params.id);
     if (!user) throw new NotFoundUserException();
@@ -52,6 +59,7 @@ Router.route("/:id/following").get(
 );
 
 Router.route("/:idUser/following/:idFollowedUser").delete(
+  verifyUserAuthenticationToken,
   requestValidation(async (req, res) => {
     const { idUser: followerUser, idFollowedUser: followedUser } = req.params;
     await FollowingController.setUnFollow(followerUser, followedUser);

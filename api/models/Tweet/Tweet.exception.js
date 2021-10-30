@@ -5,6 +5,7 @@ class CreateTweetException extends Error {
     this.name = "CreateTweetException";
   }
 }
+
 class FindTweetByIdException extends Error {
   constructor(msg = "No se encontró el tweet", status = 404) {
     super(msg);
