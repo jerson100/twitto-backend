@@ -5,6 +5,7 @@ const { LoginSchema, LoginException } = require("../utils/authentication/auth");
 const { encode } = require("../utils/validation/jwt");
 const UserController = require("../controllers/User.controller");
 const { verifyPassword } = require("../utils/validation/password");
+const { verifyUserAuthenticationToken } = require("../middlewares/token");
 
 const Router = RouterExpress();
 
@@ -28,8 +29,34 @@ Router.post(
       _id: us._id,
       typeUser: us.typeUser,
     });
-    res.status(201).json({
-      data: token,
+    res.status(200).json({
+      data: {
+        token,
+        user: {
+          username: us.username,
+          _id: us._id,
+          typeUser: us.typeUser,
+        },
+      },
+    });
+  })
+);
+
+Router.get(
+  "/whoIam",
+  verifyUserAuthenticationToken,
+  requestValidation(async (req, res) => {
+    const { us } = req;
+    const token = encode({
+      username: us.username,
+      _id: us._id,
+      typeUser: us.typeUser,
+    });
+    res.status(200).json({
+      data: {
+        user: us,
+        token,
+      },
     });
   })
 );
