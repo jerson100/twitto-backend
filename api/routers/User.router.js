@@ -31,6 +31,7 @@ Router.route("/")
     requestValidation(async (req, res) => {
       req.body.password = await generatePassword(req.body.password);
       const newUser = await UserController.create(req.body);
+      await FollowingController.setFollow(newUser._id, newUser._id);
       return res.status(201).json({ data: newUser });
     })
   );
