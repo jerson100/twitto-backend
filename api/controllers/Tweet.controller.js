@@ -121,7 +121,11 @@ const getTweetsIFollow = async (idUser) => {
     },
     { $sort: { createdAt: -1 } },
     {
-      $project: { tweets: { $first: "$tweets" }, tweets: 1 },
+      $project: {
+        tweets: { $first: "$tweets" },
+        tweets: 1,
+        _id: 0,
+      },
     },
     {
       $project: {
@@ -130,11 +134,13 @@ const getTweetsIFollow = async (idUser) => {
         },
         "tweets.createdAt": 1,
         "tweets.description": 1,
+        "tweets.isFijado": 1,
+        "tweets._id": 1,
       },
     },
     {
       $project: {
-        _id: 1,
+        _id: "$tweets._id",
         description: "$tweets.description",
         user: "$tweets.user",
         createdAt: "$tweets.createdAt",
