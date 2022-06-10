@@ -29,7 +29,12 @@ Router.route("/")
         ...req.body,
         user: req.us._id,
       });
-      return res.status(201).json({ data: newTweet });
+      return res.status(201).json({
+        data: {
+          ...newTweet._doc,
+          user: req.us,
+        },
+      });
     })
   );
 
