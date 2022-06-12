@@ -28,6 +28,7 @@ Router.post(
       username: us.username,
       _id: us._id,
       typeUser: us.typeUser,
+      email: us.email,
     });
     res.status(200).json({
       data: {
@@ -36,6 +37,7 @@ Router.post(
           username: us.username,
           _id: us._id,
           typeUser: us.typeUser,
+          email: us.email,
         },
       },
     });
