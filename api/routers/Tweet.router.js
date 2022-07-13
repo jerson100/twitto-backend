@@ -1,5 +1,5 @@
 const express = require("express");
-const { CreateTweetSchema } = require("../models/Tweet/Tweet.validation");
+const { CreateTweetSchema, ValidationRouterParametersSchema} = require("../models/Tweet/Tweet.validation");
 const TweetController = require("../controllers/Tweet.controller");
 const requestValidation = require("../middlewares/requestValidation");
 const { validationSchema } = require("../middlewares/ValidationSchema");
@@ -65,9 +65,11 @@ Router.route("/:idTweet")
 Router.get(
   "/timeline/feed",
   verifyUserAuthenticationToken,
+    validationSchema(ValidationRouterParametersSchema, "query"),
   requestValidation(async (req, res) => {
     const { _id: idUser } = req.us;
-    const tweets = await TweetController.getTweetsIFollow(idUser);
+    const {page, per_page} = req.query;
+    const tweets = await TweetController.getTweetsIFollow(idUser, parseInt(page), parseInt(per_page));
     // const tweets = await TweetController.getTweetsIFollow2(idUser);
     return res.json({ data: tweets });
   })

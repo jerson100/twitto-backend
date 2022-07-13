@@ -7,6 +7,12 @@ const CreateTweetSchema = Joi.object({
   isFijado: Joi.bool().default(false),
 });
 
+const ValidationRouterParametersSchema = Joi.object({
+  page: Joi.string().regex(/[0-9]+/).default(1),
+  per_page: Joi.string().regex(/[0-9]+/).default(20)
+})
+
 module.exports = {
   CreateTweetSchema,
+  ValidationRouterParametersSchema
 };

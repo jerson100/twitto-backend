@@ -99,57 +99,94 @@ const getTweetsIFollow2 = async (idUser) => {
   return tweets;
 };
 
-const getTweetsIFollow = async (idUser) => {
+const getTweetsIFollow = async (idUser, page, per_page) => {;
   const tweets = await Following.aggregate([
-    { $match: { followerUser: new ObjectId(idUser) } },
+    // Stage 1
+    {
+      $match: {
+        followerUser: ObjectId(idUser)
+      }
+    },
+
+    // Stage 2
     {
       $lookup: {
         from: "tweets",
         localField: "followedUser",
         foreignField: "user",
         as: "tweets",
-      },
-    },
-    { $unwind: { path: "$tweets" } },
-    {
-      $lookup: {
-        from: "users",
-        localField: "tweets.user",
-        foreignField: "_id",
-        as: "tweets.user",
-      },
+      }
     },
 
+    // Stage 3
     {
-      $project: {
-        tweets: { $first: "$tweets" },
-        tweets: 1,
-        _id: 0,
-      },
+      $unwind: {
+        path: "$tweets",
+      }
     },
+
+    // Stage 4
     {
-      $project: {
-        "tweets.user": {
-          $arrayElemAt: ["$tweets.user", 0],
-        },
-        "tweets.createdAt": 1,
-        "tweets.description": 1,
-        "tweets.isFijado": 1,
-        "tweets._id": 1,
-      },
+      $sort: {
+        "tweets.createdAt": -1
+      }
     },
+
+    // Stage 5
+    {
+      $skip: (page - 1) * per_page
+    },
+
+    // Stage 6
+    {
+      $limit: per_page
+    },
+
+    // Stage 7
+    {
+      $lookup: // Equality Match
+          {
+            from: "users",
+            localField: "tweets.user",
+            foreignField: "_id",
+            as: "user"
+          }
+    },
+
+    // Stage 8
     {
       $project: {
         _id: "$tweets._id",
         description: "$tweets.description",
-        user: "$tweets.user",
         createdAt: "$tweets.createdAt",
-      },
+        updatedAt: "$tweets.updatedAt",
+        user: {
+          $arrayElemAt: [
+            "$user",
+            0
+          ]
+        }
+      }
     },
+
+    // Stage 9
     {
-      $project: { user: { password: 0, updatedAt: 0, __v: 0 } },
-    },
-    { $sort: { createdAt: -1 } },
+      $project: {
+        _id: 1,
+        description: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        user: {
+          _id: "$user._id",
+          name: "$user.name",
+          username:"$user.username",
+          country:"$user.country",
+          typeUser:"$user.typeUser",
+          email:"$user.email",
+          createdAt:"$user.createdAt"
+        }
+      }
+    }
   ]);
   return tweets;
 };
