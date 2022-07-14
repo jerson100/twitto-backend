@@ -5,7 +5,7 @@ db.getCollection("followings").aggregate(
         // Stage 1
         {
             $match: {
-                 followerUser: ObjectId("6171dbb4e3a58c543f47af5f")
+                followerUser: ObjectId("6171dbb4e3a58c543f47af5f")
             }
         },
 
@@ -21,24 +21,24 @@ db.getCollection("followings").aggregate(
 
         // Stage 3
         {
-            $match: {
-                "tweets.createdAt": {
-                    $lt: ISODate("2022-07-11T18:42:10.173Z")
-                } 
-            }
-        },
-
-        // Stage 4
-        {
             $unwind: {
                 path: "$tweets",
             }
         },
 
-        // Stage 5
+        // Stage 4
         {
             $sort: {
-               "tweets.createdAt": -1
+                "tweets.createdAt": -1
+            }
+        },
+
+        // Stage 5
+        {
+            $match: {
+                "tweets.createdAt": {
+                    $lt: ISODate("2022-07-11T18:42:10.173+0000")
+                }
             }
         },
 
@@ -50,12 +50,12 @@ db.getCollection("followings").aggregate(
         // Stage 7
         {
             $lookup: // Equality Match
-            {
-                from: "users",
-                localField: "tweets.user",
-                foreignField: "_id",
-                as: "user"
-            }
+                {
+                    from: "users",
+                    localField: "tweets.user",
+                    foreignField: "_id",
+                    as: "user"
+                }
         },
 
         // Stage 8
@@ -93,5 +93,4 @@ db.getCollection("followings").aggregate(
     {
 
     }
-
 );

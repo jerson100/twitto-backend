@@ -13,8 +13,8 @@ const add = async ({ user, description, isFijado }) => {
 
 const all = async () => {
   const tweets = await Tweet.find().populate(
-    "user",
-    "-password -createdAt -updatedAt -birthday"
+      "user",
+      "-password -createdAt -updatedAt -birthday"
   );
   return tweets;
 };
@@ -65,8 +65,8 @@ const remove = async (id) => {
 
 const getById = async (id) => {
   const tweet = await Tweet.findById(id, { __v: 0 }).populate(
-    "user",
-    "-password -createdAt -updatedAt -birthday -__v"
+      "user",
+      "-password -createdAt -updatedAt -birthday -__v"
   );
 
   if (!tweet) {
@@ -78,8 +78,8 @@ const getById = async (id) => {
 
 const getByIdUserAndIdTweet = async (idUser, idTweet) => {
   const tweet = await Tweet.findOne(
-    { user: idUser, _id: idTweet },
-    { __v: 0 }
+      { user: idUser, _id: idTweet },
+      { __v: 0 }
   ).populate("user", "-password -createdAt -updatedAt -birthday -__v");
   return tweet;
 };
@@ -87,15 +87,15 @@ const getByIdUserAndIdTweet = async (idUser, idTweet) => {
 const getTweetsIFollow2 = async (idUser) => {
   //obtenemos todos los usuarios a quien sigue el usuario(idUser)
   const usersId = (await Following.find({ followerUser: idUser })).map(
-    (us) => us.followedUser
+      (us) => us.followedUser
   );
   //obtener todos los tweets de los usuarios a quienes sigo...
   const tweets = await Tweet.find(
-    { user: { $in: usersId } },
-    { isFijado: 0, updatedAt: 0, __v: 0 }
+      { user: { $in: usersId } },
+      { isFijado: 0, updatedAt: 0, __v: 0 }
   )
-    .populate("user", "-password -__v -updatedAt")
-    .sort({ createdAt: -1 });
+      .populate("user", "-password -__v -updatedAt")
+      .sort({ createdAt: -1 });
   return tweets;
 };
 
@@ -166,7 +166,7 @@ const getTweetsIFollow = async (idUser, datetime, per_page) => {
     }
   ];
   if(datetime){
-    pipeline.splice(2,0,{
+    pipeline.splice(4,0,{
       $match: {
         "tweets.createdAt": {
           $lt: new Date(parseInt(datetime))
