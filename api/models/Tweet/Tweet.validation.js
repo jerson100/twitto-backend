@@ -8,11 +8,17 @@ const CreateTweetSchema = Joi.object({
 });
 
 const ValidationRouterParametersSchema = Joi.object({
-  page: Joi.string().regex(/[0-9]+/).default(1),
-  per_page: Joi.string().regex(/[0-9]+/).default(20)
+  page: Joi.string().regex(/\d+/).default(1),
+  per_page: Joi.string().regex(/\d+/).default(20)
+})
+
+const ValidationTweetPaginationSchema = Joi.object({
+  datetime: Joi.string().regex(/^\d+$/),
+  per_page: Joi.string().regex(/^\d+$/).default(20)
 })
 
 module.exports = {
   CreateTweetSchema,
-  ValidationRouterParametersSchema
+  ValidationRouterParametersSchema,
+  ValidationTweetPaginationSchema
 };

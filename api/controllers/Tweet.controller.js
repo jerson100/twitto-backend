@@ -99,16 +99,13 @@ const getTweetsIFollow2 = async (idUser) => {
   return tweets;
 };
 
-const getTweetsIFollow = async (idUser, page, per_page) => {;
-  const tweets = await Following.aggregate([
-    // Stage 1
+const getTweetsIFollow = async (idUser, datetime, per_page) => {
+  const pipeline = [
     {
       $match: {
-        followerUser: ObjectId(idUser)
+        followerUser: new ObjectId(idUser)
       }
     },
-
-    // Stage 2
     {
       $lookup: {
         from: "tweets",
@@ -117,34 +114,21 @@ const getTweetsIFollow = async (idUser, page, per_page) => {;
         as: "tweets",
       }
     },
-
-    // Stage 3
     {
       $unwind: {
         path: "$tweets",
       }
     },
-
-    // Stage 4
     {
       $sort: {
         "tweets.createdAt": -1
       }
     },
-
-    // Stage 5
     {
-      $skip: (page - 1) * per_page
+      $limit: per_page || 20
     },
-
-    // Stage 6
     {
-      $limit: per_page
-    },
-
-    // Stage 7
-    {
-      $lookup: // Equality Match
+      $lookup:
           {
             from: "users",
             localField: "tweets.user",
@@ -152,8 +136,6 @@ const getTweetsIFollow = async (idUser, page, per_page) => {;
             as: "user"
           }
     },
-
-    // Stage 8
     {
       $project: {
         _id: "$tweets._id",
@@ -162,32 +144,37 @@ const getTweetsIFollow = async (idUser, page, per_page) => {;
         updatedAt: "$tweets.updatedAt",
         user: {
           $arrayElemAt: [
-            "$user",
+            {
+              $map: {
+                input: "$user",
+                as: "i",
+                in: {
+                  _id: "$$i._id",
+                  name: "$$i.name",
+                  username: "$$i.username",
+                  country: "$$i.country",
+                  typeUser: "$$i.typeUser",
+                  email: "$$i.email",
+                  createdAt: "$$i.createdAt"
+                }
+              }
+            },
             0
           ]
         }
       }
-    },
-
-    // Stage 9
-    {
-      $project: {
-        _id: 1,
-        description: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        user: {
-          _id: "$user._id",
-          name: "$user.name",
-          username:"$user.username",
-          country:"$user.country",
-          typeUser:"$user.typeUser",
-          email:"$user.email",
-          createdAt:"$user.createdAt"
+    }
+  ];
+  if(datetime){
+    pipeline.splice(2,0,{
+      $match: {
+        "tweets.createdAt": {
+          $lt: new Date(parseInt(datetime))
         }
       }
-    }
-  ]);
+    });
+  }
+  const tweets = await Following.aggregate(pipeline);
   return tweets;
 };
 

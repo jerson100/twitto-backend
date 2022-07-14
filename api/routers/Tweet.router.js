@@ -1,5 +1,5 @@
 const express = require("express");
-const { CreateTweetSchema, ValidationRouterParametersSchema} = require("../models/Tweet/Tweet.validation");
+const { CreateTweetSchema, ValidationRouterParametersSchema, ValidationTweetPaginationSchema} = require("../models/Tweet/Tweet.validation");
 const TweetController = require("../controllers/Tweet.controller");
 const requestValidation = require("../middlewares/requestValidation");
 const { validationSchema } = require("../middlewares/ValidationSchema");
@@ -49,11 +49,9 @@ Router.route("/:idTweet")
     })
   )
   .delete(
-    [
-      verifyUserAuthenticationToken,
-      isItMyTweet,
-      validationSchema(validateObjectIdSchema("idTweet"), "params"),
-    ],
+    verifyUserAuthenticationToken,
+    isItMyTweet,
+    validationSchema(validateObjectIdSchema("idTweet"), "params"),
     requestValidation(async (req, res) => {
       const { idTweet } = req.params;
       await TweetController.remove(idTweet);
@@ -61,16 +59,18 @@ Router.route("/:idTweet")
     })
   );
 
-//obtenemos todos los posts a los que el usuario sigue pues...
+/**
+ * Obtenemos todos los tweets de los usuarios a los que sigue
+ * el usuario que accedió a la aplicación.
+ */
 Router.get(
   "/timeline/feed",
   verifyUserAuthenticationToken,
-    validationSchema(ValidationRouterParametersSchema, "query"),
+  validationSchema(ValidationTweetPaginationSchema, "query"),
   requestValidation(async (req, res) => {
     const { _id: idUser } = req.us;
-    const {page, per_page} = req.query;
-    const tweets = await TweetController.getTweetsIFollow(idUser, parseInt(page), parseInt(per_page));
-    // const tweets = await TweetController.getTweetsIFollow2(idUser);
+    const { datetime, per_page } = req.query;
+    const tweets = await TweetController.getTweetsIFollow(idUser, datetime, parseInt(per_page));
     return res.json({ data: tweets });
   })
 );
