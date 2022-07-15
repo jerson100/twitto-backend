@@ -14,4 +14,13 @@ const UserCreateSchemaValidation = Joi.object({
   email: Joi.string().email().required(),
 });
 
-module.exports = { UserCreateSchemaValidation };
+const UserPatchSchema = Joi.object({
+  name: Joi.string().alphanum().min(6).max(20),
+  username: Joi.string().min(8).max(20),
+  password: Joi.string().regex(REGEX.user.password),
+  description: Joi.string().max(200).trim(),
+  country: Joi.string().max(20),
+  birthday: Joi.string()
+});
+
+module.exports = { UserCreateSchemaValidation, UserPatchSchema };

@@ -1,13 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-const fileUpload = require("express-fileupload");
+require("dotenv").config();
 const UserRouter = require("./api/routers/User.router");
 const FollowingRouter = require("./api/routers/Following.router");
 const TweetRouter = require("./api/routers/Tweet.router");
 const AuthRouter = require("./api/routers/Auth.router");
 const mongoDB = require("./api/configs/mongoDb");
-const {configFileUpload} = require("./api/configs/fileupload");
-require("dotenv").config();
 const app = express();
 
 //connection database - MongoDB
@@ -16,8 +14,6 @@ mongoDB.connection();
 app.use(cors());
 //middlewares
 app.use(express.json());
-//config temp files
-app.use(fileUpload(configFileUpload))
 
 app.use(`/api/${process.env.API_VERSION}/users`, UserRouter);
 app.use(`/api/${process.env.API_VERSION}/follows`, FollowingRouter);

@@ -2,20 +2,22 @@ const { Router: RouterExpress } = require("express");
 const requestValidation = require("../middlewares/requestValidation");
 const { validationSchema } = require("../middlewares/ValidationSchema");
 const {
-  UserCreateSchemaValidation,
+  UserCreateSchemaValidation, UserPatchSchema,
 } = require("../models/User/User.validation");
 const UserController = require("../controllers/User.controller");
 const { NotFoundUserException } = require("../models/User/User.exception");
 const { generatePassword } = require("../utils/validation/password");
-const { isRegisteredUser, verifyUsersType } = require("../middlewares/user");
+const { isRegisteredUser, verifyUsersType, existUser} = require("../middlewares/user");
 const FollowingController = require("../controllers/Following.controller");
 const { verifyUserAuthenticationToken } = require("../middlewares/token");
 const { USERS_TYPE } = require("../configs/constant");
-const { v2: cloudinary } = require("cloudinary");
+const fileUpload = require("express-fileupload");
+const {configFileUpload} = require("../configs/fileupload");
+const {uploadFileCloudinary} = require("../configs/cloudinary");
+const fs = require("fs-extra");
 
 //sistema de middleware y direccionamiento completo
 const Router = RouterExpress();
-
 
 Router.route("/")
   .get(
@@ -35,7 +37,32 @@ Router.route("/")
       await FollowingController.setFollow(newUser._id, newUser._id);
       return res.status(201).json({ data: newUser });
     })
-  );
+  )
+    .patch(
+        verifyUserAuthenticationToken,
+        existUser(),
+        fileUpload(configFileUpload),
+        validationSchema(UserPatchSchema, "body"),
+        requestValidation(async (req, res) => {
+            const obj = {...req.body};
+            console.log(req.us)
+            if(req.files?.profile_img){
+                try{
+                    const { public_id, secure_url } = await uploadFileCloudinary(req.files.profile_img.tempFilePath);
+                    obj.profile_img = {
+                        public_id,
+                        secure_url
+                    }
+                }catch(e){
+                    console.log(e)
+                }finally{
+                    await fs.unlink(req.files.profile_img.tempFilePath);
+                }
+            }
+            const updatedUser = await UserController.updateOne(req.us._id, obj);
+            res.status(200).json( { data: updatedUser } );
+        })
+    )
 
 Router.route("/:id")
     .get(
@@ -46,20 +73,7 @@ Router.route("/:id")
             return res.json({ data: user });
         })
     )
-    .patch(
-        verifyUserAuthenticationToken,
-        requestValidation(async (req, res) => {
-            const {profile_img} = req.files;
-            console.log(profile_img)
-            cloudinary.config({
-                cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-                api_key: process.env.CLOUDINARY_API_KEY,
-                api_secret: process.env.CLOUDINARY_API_SECRET,
-                secure: true
-            });
-            res.send();
-        })
-    )
+
 
 Router.route("/:id/followers").get(
   requestValidation(async (req, res) => {

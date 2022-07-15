@@ -32,9 +32,18 @@ class RegisteredUserException extends Error {
   }
 }
 
+class UpdateUserException extends Error {
+  constructor(msg = "No se pudo actualizar el usuario", status = 400) {
+    super(msg);
+    this.status = status;
+    this.name = "UpdateUserException";
+  }
+}
+
 module.exports = {
   NotFoundUserException,
   ForbiddenUserException,
   UnauthorizedUserException,
   RegisteredUserException,
+  UpdateUserException
 };
