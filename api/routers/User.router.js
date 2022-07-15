@@ -1,6 +1,6 @@
 const { Router: RouterExpress } = require("express");
 const requestValidation = require("../middlewares/requestValidation");
-const { validationSchema } = require("../middlewares/ValidationSchema");
+const { schemaValidation } = require("../middlewares/ValidationSchema");
 const {
   UserCreateSchemaValidation, UserPatchSchema,
 } = require("../models/User/User.validation");
@@ -30,7 +30,7 @@ Router.route("/")
   )
   .post(
     isRegisteredUser(),
-    validationSchema(UserCreateSchemaValidation),
+    schemaValidation(UserCreateSchemaValidation),
     requestValidation(async (req, res) => {
       req.body.password = await generatePassword(req.body.password);
       const newUser = await UserController.create(req.body);
@@ -42,7 +42,7 @@ Router.route("/")
         verifyUserAuthenticationToken,
         existUser(),
         fileUpload(configFileUpload),
-        validationSchema(UserPatchSchema, "body", (req) => {
+        schemaValidation(UserPatchSchema, "body", (req) => {
             if(req.files.profile_img) fs.unlink(req.files.profile_img.tempFilePath);
         }),
         requestValidation(async (req, res) => {
@@ -52,11 +52,9 @@ Router.route("/")
                     const { public_id, secure_url } = await uploadFileCloudinary(req.files.profile_img.tempFilePath);
                     //remove the previous image of cloudinary
                     if(obj.profile_img.public_id && public_id){
-                        try {
-                            await deleteFileCloduinary(obj.profile_img.public_id);
-                        }catch(e){console.log(e)}
+                        try {await deleteFileCloduinary(obj.profile_img.public_id);}catch(e){console.log(e)}
                     }
-                    obj.profile_img = { public_id,secure_url }
+                    obj.profile_img = { public_id, secure_url }
                 }catch(e){
                     throw new UserUpdateException("Usuario no actualizado, no se logró almacenar la imagen");
                 }finally{

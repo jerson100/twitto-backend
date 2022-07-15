@@ -1,8 +1,8 @@
 const express = require("express");
-const { CreateTweetSchema, ValidationRouterParametersSchema, ValidationTweetPaginationSchema} = require("../models/Tweet/Tweet.validation");
+const { CreateTweetSchema, ValidationTweetPaginationSchema} = require("../models/Tweet/Tweet.validation");
 const TweetController = require("../controllers/Tweet.controller");
 const requestValidation = require("../middlewares/requestValidation");
-const { validationSchema } = require("../middlewares/ValidationSchema");
+const { schemaValidation } = require("../middlewares/ValidationSchema");
 const { validateObjectIdSchema } = require("../utils/validation/objectId");
 const { verifyUserAuthenticationToken } = require("../middlewares/token");
 const { isItMyTweet } = require("../middlewares/tweet");
@@ -23,7 +23,7 @@ Router.route("/")
   )
   .post(
     verifyUserAuthenticationToken,
-    validationSchema(CreateTweetSchema),
+    schemaValidation(CreateTweetSchema),
     requestValidation(async (req, res) => {
       const newTweet = await TweetController.add({
         ...req.body,
@@ -41,7 +41,7 @@ Router.route("/")
 Router.route("/:idTweet")
   .get(
     verifyUserAuthenticationToken,
-    validationSchema(validateObjectIdSchema("idTweet"), "params"),
+    schemaValidation(validateObjectIdSchema("idTweet"), "params"),
     requestValidation(async (req, res) => {
       const { idTweet } = req.params;
       const tweet = await TweetController.getById(idTweet);
@@ -51,7 +51,7 @@ Router.route("/:idTweet")
   .delete(
     verifyUserAuthenticationToken,
     isItMyTweet,
-    validationSchema(validateObjectIdSchema("idTweet"), "params"),
+    schemaValidation(validateObjectIdSchema("idTweet"), "params"),
     requestValidation(async (req, res) => {
       const { idTweet } = req.params;
       await TweetController.remove(idTweet);
@@ -66,7 +66,7 @@ Router.route("/:idTweet")
 Router.get(
   "/timeline/feed",
   verifyUserAuthenticationToken,
-  validationSchema(ValidationTweetPaginationSchema, "query"),
+  schemaValidation(ValidationTweetPaginationSchema, "query"),
   requestValidation(async (req, res) => {
     const { _id: idUser } = req.us;
     const { datetime, per_page } = req.query;

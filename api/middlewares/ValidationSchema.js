@@ -2,7 +2,7 @@ const {
   SchemaValidationError,
 } = require("../utils/validation/validationSchema");
 
-const validationSchema = (schema, property = "body", errorCallback) => {
+const schemaValidation = (schema, property = "body", errorCallback) => {
   return (req, res, next) => {
     const { error, value } = schema.validate(req[property], {
       abortEarly: false,
@@ -24,5 +24,5 @@ const validationSchema = (schema, property = "body", errorCallback) => {
 };
 
 module.exports = {
-  validationSchema,
+  schemaValidation,
 };

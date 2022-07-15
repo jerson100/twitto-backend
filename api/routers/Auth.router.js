@@ -1,6 +1,6 @@
 const { Router: RouterExpress } = require("express");
 const requestValidation = require("../middlewares/requestValidation");
-const { validationSchema } = require("../middlewares/ValidationSchema");
+const { schemaValidation } = require("../middlewares/ValidationSchema");
 const { LoginSchema, LoginException } = require("../utils/authentication/auth");
 const { encode } = require("../utils/validation/jwt");
 const UserController = require("../controllers/User.controller");
@@ -11,7 +11,7 @@ const Router = RouterExpress();
 
 Router.post(
   "/login",
-  [validationSchema(LoginSchema, "body")],
+  schemaValidation(LoginSchema, "body"),
   requestValidation(async (req, res) => {
     const { username, password } = req.body;
     //verificar si esa contraseña es la correcta...
