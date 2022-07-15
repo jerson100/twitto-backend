@@ -3,7 +3,7 @@ const FollowingController = require("../controllers/Following.controller");
 const {
   CreateFollowingSchema,
 } = require("../models/Following/Following.validation");
-const { validationSchema } = require("../middlewares/ValidationSchema");
+const { schemaValidation } = require("../middlewares/ValidationSchema");
 const requestValidation = require("../middlewares/requestValidation");
 const { verifyUserAuthenticationToken } = require("../middlewares/token");
 const Router = express.Router();
@@ -18,7 +18,7 @@ Router.route("/")
   )
   .post(
     verifyUserAuthenticationToken,
-    validationSchema(CreateFollowingSchema),
+    schemaValidation(CreateFollowingSchema),
     requestValidation(async (req, res) => {
       const { followerUser, followedUser } = req.body;
       //falta validar que ambos usuarios existan...
