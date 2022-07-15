@@ -155,7 +155,8 @@ const getTweetsIFollow = async (idUser, datetime, per_page) => {
                   country: "$$i.country",
                   typeUser: "$$i.typeUser",
                   email: "$$i.email",
-                  createdAt: "$$i.createdAt"
+                  createdAt: "$$i.createdAt",
+                  profile_img: "$$i.profile_img",
                 }
               }
             },

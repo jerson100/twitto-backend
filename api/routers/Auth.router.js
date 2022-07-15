@@ -38,6 +38,7 @@ Router.post(
           _id: us._id,
           typeUser: us.typeUser,
           email: us.email,
+          profile_img: us.profile_img
         },
       },
     });
