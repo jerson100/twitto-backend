@@ -50,7 +50,6 @@ Router.route("/")
             if(req.files?.profile_img){
                 try{
                     const { public_id, secure_url } = await uploadFileCloudinary(req.files.profile_img.tempFilePath);
-                    //remove the previous image of cloudinary
                     if(obj.profile_img.public_id && public_id){
                         try {await deleteFileCloduinary(obj.profile_img.public_id);}catch(e){console.log(e)}
                     }
