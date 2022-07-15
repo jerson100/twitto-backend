@@ -8,13 +8,14 @@ const UserController = require("../controllers/User.controller");
 const { NotFoundUserException } = require("../models/User/User.exception");
 const { generatePassword } = require("../utils/validation/password");
 const { isRegisteredUser, verifyUsersType } = require("../middlewares/user");
-
 const FollowingController = require("../controllers/Following.controller");
 const { verifyUserAuthenticationToken } = require("../middlewares/token");
 const { USERS_TYPE } = require("../configs/constant");
+const { v2: cloudinary } = require("cloudinary");
 
 //sistema de middleware y direccionamiento completo
 const Router = RouterExpress();
+
 
 Router.route("/")
   .get(
@@ -36,14 +37,29 @@ Router.route("/")
     })
   );
 
-Router.route("/:id").get(
-  verifyUserAuthenticationToken,
-  requestValidation(async (req, res) => {
-    const user = await UserController.getById(req.params.id);
-    if (!user) throw new NotFoundUserException();
-    return res.json({ data: user });
-  })
-);
+Router.route("/:id")
+    .get(
+        verifyUserAuthenticationToken,
+        requestValidation(async (req, res) => {
+            const user = await UserController.getById(req.params.id);
+            if (!user) throw new NotFoundUserException();
+            return res.json({ data: user });
+        })
+    )
+    .patch(
+        verifyUserAuthenticationToken,
+        requestValidation(async (req, res) => {
+            const {profile_img} = req.files;
+            console.log(profile_img)
+            cloudinary.config({
+                cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+                api_key: process.env.CLOUDINARY_API_KEY,
+                api_secret: process.env.CLOUDINARY_API_SECRET,
+                secure: true
+            });
+            res.send();
+        })
+    )
 
 Router.route("/:id/followers").get(
   requestValidation(async (req, res) => {
