@@ -5,7 +5,7 @@ const {
   UserCreateSchemaValidation, UserPatchSchema,
 } = require("../models/User/User.validation");
 const UserController = require("../controllers/User.controller");
-const { NotFoundUserException } = require("../models/User/User.exception");
+const { NotFoundUserException, UserUpdateException } = require("../models/User/User.exception");
 const { generatePassword } = require("../utils/validation/password");
 const { isRegisteredUser, verifyUsersType, existUser} = require("../middlewares/user");
 const FollowingController = require("../controllers/Following.controller");
@@ -13,7 +13,7 @@ const { verifyUserAuthenticationToken } = require("../middlewares/token");
 const { USERS_TYPE } = require("../configs/constant");
 const fileUpload = require("express-fileupload");
 const {configFileUpload} = require("../configs/fileupload");
-const {uploadFileCloudinary} = require("../configs/cloudinary");
+const {uploadFileCloudinary, deleteFileCloduinary} = require("../configs/cloudinary");
 const fs = require("fs-extra");
 
 //sistema de middleware y direccionamiento completo
@@ -42,25 +42,37 @@ Router.route("/")
         verifyUserAuthenticationToken,
         existUser(),
         fileUpload(configFileUpload),
-        validationSchema(UserPatchSchema, "body"),
+        validationSchema(UserPatchSchema, "body", (req) => {
+            if(req.files.profile_img) fs.unlink(req.files.profile_img.tempFilePath);
+        }),
         requestValidation(async (req, res) => {
-            const obj = {...req.body};
-            console.log(req.us)
+            const obj = {...req.us, ...req.body}
             if(req.files?.profile_img){
                 try{
                     const { public_id, secure_url } = await uploadFileCloudinary(req.files.profile_img.tempFilePath);
-                    obj.profile_img = {
-                        public_id,
-                        secure_url
+                    //remove the previous image of cloudinary
+                    if(obj.profile_img.public_id && public_id){
+                        try {
+                            await deleteFileCloduinary(obj.profile_img.public_id);
+                        }catch(e){console.log(e)}
                     }
+                    obj.profile_img = { public_id,secure_url }
                 }catch(e){
-                    console.log(e)
+                    throw new UserUpdateException("Usuario no actualizado, no se logró almacenar la imagen");
                 }finally{
                     await fs.unlink(req.files.profile_img.tempFilePath);
                 }
             }
-            const updatedUser = await UserController.updateOne(req.us._id, obj);
-            res.status(200).json( { data: updatedUser } );
+            const updatedUser = await UserController.updateOne(obj._id, obj)
+            res.status(200).json( {
+                data: {
+                    _id: updatedUser._id,name: updatedUser.name,
+                    username:updatedUser.username,email:updatedUser.email,
+                    typeUser:updatedUser.typeUser,country:updatedUser.country,
+                    birthday: updatedUser.birthday,profile_img:updatedUser.profile_img,
+                    createdAt:updatedUser.createdAt,updatedAt:updatedUser.updatedAt,
+                }
+            } );
         })
     )
 

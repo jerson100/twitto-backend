@@ -14,7 +14,7 @@ const updateMany = async () => {
 const updateOne = async (id, us) => {
   return await User.findByIdAndUpdate(id, {
     $set: us,
-  });
+  },{new: true});
 };
 
 const all = async () => {
@@ -26,7 +26,7 @@ const getById = async (id) => {
 };
 
 const getUserByUsername = async (username) => {
-  return await User.findOne({ username: username });
+  return await User.findOne({ username: username }, {password: 0, _v: 0});
 };
 
 // const findUserBy = async () => {};
